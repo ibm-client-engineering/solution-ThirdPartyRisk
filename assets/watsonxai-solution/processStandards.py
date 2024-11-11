@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 default_ef = embedding_functions.DefaultEmbeddingFunction()
-READ_LOCAL_VDB = False
+READ_LOCAL_VDB = True
 
 def get_credentials():
 	return {
@@ -75,4 +75,4 @@ def chunk_standards(filename) :
      
 
 # Call the chunk_standards("Insert PDF Name") Function 
-chunk_standards("../data/USMITSecurityStandards.pdf")
+#chunk_standards("../data/USMITSecurityStandards.pdf")

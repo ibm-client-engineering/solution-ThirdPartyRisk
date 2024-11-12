@@ -25,7 +25,7 @@ def create_standards_db() :
 
     #Read the chunks
     chunks = {}
-    with open("../data/standards.json") as f :
+    with open("/Users/madisonlee/Documents/GitHub/solution-ThirdPartyRisk/assets/data/standards.json") as f :
         #Open the json file and read it into the chunks dictionary
         chunks = json.load(f)
 

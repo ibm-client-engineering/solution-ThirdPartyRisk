@@ -14,6 +14,7 @@ load_dotenv()
 vdb = create_standards_db()
 
 BATCH_SIZE = 8
+NUM_CONTEXTS = 3
 
 #-----------------Functions--------------------#
 #Get credentials for LLM call
@@ -161,18 +162,74 @@ def test_context_relevant_any(questions, contexts):
 
     return responses
 
+def test_context_relevant_single(questions, contexts):
+    model_id = os.environ['GRANITE_MODEL_ID']
+
+    parameters = {
+        "decoding_method": "greedy",
+        "max_new_tokens": 400,
+        "repetition_penalty": 1,
+        "stop_sequences": ["}"]
+    }
+
+    project_id = os.environ['PROJECT_ID']
+
+    model = ModelInference(
+        model_id = model_id,
+        params = parameters,
+        credentials = get_credentials(),
+        project_id = project_id
+    )
+
+    prompt_input = """I will give you an question from a vendor security assessment form and a context from a firm's minimum security requirements document, both related to IBM BANK's third party vendor assessment process. For the input given, indicate whether or not the provided contexts is relevant to the question being asked. Be generous with your assessment, stating true even if the context is barely relevant.
+    Please answer only in the following manner and in json output, where true indicates that the context is relevant, and false indiates it is not.
+    {{"Response": true}} or
+    {{"Response": false}}
+
+    Example Input 1:
+    Question: Does the pandemic plan include an oversight program to ensure ongoing review and updates to the pandemic plan so that policies, standards, and procedures include up-to-date, relevant information provided by governmental sources? Context: "Heading: VI. Disaster Recovery & Incident Response Standard, Content: 6.4 Institutions must update their IT Incident Response and IT Disaster Recovery Plans annually.\n6.5 The institution must test the institution's IT Incident Response Plan at least annually and their disaster recovery plan at least annually. The tests must be documented. If an institution uses their incident response plan or disaster recovery plan to handle a real security or service interruption event, that event may be documented and take the place of the annual test. If a single event or test exercises both the disaster recovery and incident response plans, the one event or test can be used to meet both annual testing requirement."
+    Output:
+    {{"Response": true}}
+
+    Example Input 2:
+    Question: "Are whitelisted and/or blacklisted applications documented and enforced?" Context: "Heading: 9.3 Third-party contracts should include the following as applicable:, Content: · Requirements for recovery of institutional resources such as data, software, hardware, configurations, and licenses at the termination of the contract.\nProvisions stipulating that the third-party service provider is the owner or authorized user of their software and all of its components, and the thirdparty's software and all of its components, to the best of third-party's knowledge, do not violate any patent, trademark, trade secret, copyright or any other right of ownership of any other party.\n· Service level agreements including provisions for non-compliance.\n· Provisions that stipulate that all institutional data remains the property of the institution.\n· Provisions that block the secondary use of institutional data.\n· Provisions that require the consent of the institution prior to sharing institutional data with any third parties.\nProvisions that manage the retention and destruction requirements related to institutional data.\n· Requirements to establish and maintain industry standard technical and organizational measures to protect against:\n· Provisions that require any vendor to disclose any subcontractors related to their services.\no accidental destruction, loss, alteration, or damage to the materials;\nunauthorized access to confidential information\no unauthorized access to the services and materials; and\nindustry known system attacks (e.g., hacker and virus attacks)\n· Requirements for reporting any confirmed or suspected breach of institutional data to the institution.\n· Requirements that the institution be given notice of any government or third-party subpoena requests prior to the contractor answering a request.\n· The right of the Institution or an appointed audit firm to audit the vendor's security related to the processing, transport, or storage of institutional data.\n· Requirement that the Service Provider must periodically make available a third-party review that satisfies the professional requirement of being performed by a recognized independent audit organization (refer to 9.1). In addition, the Service Provider should make available evidence of their business continuity and disaster recovery capabilities to mitigate the impact of a realized risk.\n· Requirement that the Service Provider ensure continuity of services in the event of the company being acquired or a change in management.\n· Requirement that the contract does not contain the following provisions:"
+    Output:
+    {{"Response": false}}
+
+    Input:
+    Question: {} Context: {}
+
+    Output: 
+    """
+    prompts = [prompt_input.format(questions.iloc[i], str(contexts[i])) for i in range(len(questions))]
+
+    response = model.generate_text(prompt=prompts)
+    responses = []
+    for text in response :
+        try:
+            response_data = json.loads(text)
+            responses.append(response_data)
+        except json.JSONDecodeError:
+            print(f"Failed to parse JSON: {text}")
+            responses.append("ERROR")
+
+
+    return responses
+
    
 #Save reference SIG to a new csv
 def process_question(questions, nums):
-    print(questions)
     if isinstance(questions.iloc[0], str):
         standards_contexts = [""] * len(questions)
         try :
-            contexts = [get_standards_context(q, num_results=3) for q in questions]
-            relevant_response = test_context_relevant_any(questions, contexts)
+            contexts = [get_standards_context(q, num_results=NUM_CONTEXTS) for q in questions]
+            if NUM_CONTEXTS == 1 :
+                relevant_response = test_context_relevant_single(questions, contexts)
+            else: 
+                relevant_response = test_context_relevant_any(questions, contexts)
             for i in range(len(questions)) :
                 if relevant_response[i]["Response"]:
-                    standards_contexts[i] = contexts[i][0] + "; " + contexts[i][1] + "; " + contexts[i][2]
+                    standards_contexts[i] = "".join([contexts[i][j] + "; " for j in range(NUM_CONTEXTS)])
         except: 
             pass #if its not relevant or there was an error then dont include the context
         ref_responses = determine_response(questions)
@@ -203,7 +260,7 @@ def create_ref_sig(bs_df, batch_size=1):
 
     
     # Add to new reference SIG csv
-    df.to_csv('golden_sig.csv', index=False)
+    df.to_csv('../data/golden_sig.csv', index=False)
     
     return df
 	

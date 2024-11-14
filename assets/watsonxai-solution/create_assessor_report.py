@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 load_dotenv()
 
-GOLDEN_SIG_PATH = '/Users/madisonlee/Documents/GitHub/solution-ThirdPartyRisk/assets/data/golden_sig.csv'
+GOLDEN_SIG_PATH = '../data/golden_sig.csv'
 gs_df = pd.read_csv(GOLDEN_SIG_PATH)
 
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -340,6 +340,6 @@ def create_assessor_report(sig_path):
 #-----------------RUNNER--------------------#
 
 
-vendor_sig = '/Users/madisonlee/Documents/GitHub/solution-ThirdPartyRisk/assets/data/synthetic_SIG.csv'
+vendor_sig = '../data/synthetic_SIG.csv'
 
 create_assessor_report(vendor_sig)

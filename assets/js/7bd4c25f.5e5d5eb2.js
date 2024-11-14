@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[6783],{7125:s=>{s.exports=JSON.parse('[{"label":"log","permalink":"/solution-ThirdPartyRisk/flight-logs/tags/log","count":1},{"label":"sprint","permalink":"/solution-ThirdPartyRisk/flight-logs/tags/sprint","count":1}]')}}]);

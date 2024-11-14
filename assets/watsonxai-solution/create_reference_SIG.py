@@ -210,8 +210,8 @@ def create_ref_sig(bs_df, batch_size=1):
 	
 
 #-----------------RUNNER--------------------#
-start = time.time()
-bs_df = pd.read_excel("/Users/madisonlee/Documents/GitHub/solution-ThirdPartyRisk/assets/data/SIG_BLANK.xlsm", sheet_name=None)
-create_ref_sig(bs_df, BATCH_SIZE)
-end = time.time()
-print(f"Program took {end - start} seconds to complete")
+# start = time.time()
+# bs_df = pd.read_excel("/Users/madisonlee/Documents/GitHub/solution-ThirdPartyRisk/assets/data/SIG_BLANK.xlsm", sheet_name=None)
+# create_ref_sig(bs_df, BATCH_SIZE)
+# end = time.time()
+# print(f"Program took {end - start} seconds to complete")

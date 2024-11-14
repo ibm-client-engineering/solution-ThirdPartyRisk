@@ -14,7 +14,7 @@ async function createconfig() {
       mermaid: true,
     },
     themes: ["@docusaurus/theme-mermaid", "@docusaurus/theme-live-codeblock"],
-    title: "Insert Solution Name",
+    title: "Third Party Risk x wxai",
     tagline: "Build Faster. Together.",
     favicon: "img/favicon.ico",
 
@@ -22,13 +22,13 @@ async function createconfig() {
     url: "https://ibm-client-engineering.github.io",
     // Set the /<baseUrl>/ pathname under which your site is served
     // For GitHub pages deployment, it is often "/<projectName>/"
-    baseUrl: "/insert-solution-name",
+    baseUrl: "/solution-ThirdPartyRisk",
 
 
     // GitHub pages deployment config.
     // If you aren"t using GitHub pages, you don"t need these.
     organizationName: "ibm-client-engineering", // Usually your GitHub org/user name.
-    projectName: "insert-solution-name", // Usually your repo name.
+    projectName: "solution-ThirdPartyRisk", // Usually your repo name.
 
     onBrokenLinks: "throw",
     onBrokenMarkdownLinks: "warn",
@@ -130,7 +130,7 @@ async function createconfig() {
           },
         },
         navbar: {
-          title: "| Insert Solution Name",
+          title: "| Third Party Risk x wxai",
           logo: {
             alt: "IBM Client Engineering Logo",
             src: "img/logo.svg",

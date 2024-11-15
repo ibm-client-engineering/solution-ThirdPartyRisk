@@ -1,6 +1,6 @@
 import pandas as pd
 import os, openpyxl, re
-from ibm_watsonx_ai.foundation_models import Model
+from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 from ibm_watsonx_ai.foundation_models.utils.enums import DecodingMethods
 import json
@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 load_dotenv()
 
-GOLDEN_SIG_PATH = '/Users/madisonlee/Documents/GitHub/solution-ThirdPartyRisk/assets/data/golden_sig.csv'
+GOLDEN_SIG_PATH = '../data/golden_sig.csv'
 gs_df = pd.read_csv(GOLDEN_SIG_PATH)
 
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ def generate_gap(question, response, additional_info):
         GenParams.REPETITION_PENALTY: 1.12,
     }
 
-    model = Model(
+    model = ModelInference(
         model_id = "ibm/granite-13b-chat-v2",
         params=parameters, 
         credentials=get_credentials(),
@@ -157,7 +157,7 @@ def generate_recommendation(question, std_context, additional_info):
     additional_info = additional_info if type(additional_info) == str else "No additional info provided"
 
 
-    model = Model(
+    model = ModelInference(
         model_id = model_id,
         params = parameters,
         credentials = get_credentials(),
@@ -254,13 +254,13 @@ def compare_to_reference(sig_df):
     for index, row in sig_df.iterrows() :
         ai_provided[index] = type(row["Additional Information"]) == str
         try:
-            context = gs_df.loc[gs_df['SIG Question'] == row["SIG Question Text"]].iloc[0]["Standard Context"]
-            sig_df.loc[index, "Standard Context"] = context
+            context = gs_df.loc[gs_df['SIG Question'] == row["SIG Question Text"]].iloc[0]["Standards Context"]
+            sig_df.loc[index, "Standards Context"] = context
         except:
             #This question is not in the golden SIG, so add it
             reference = process_question(row['SIG Question Text'], row["Ques Num"])
             gs_df = pd.concat([gs_df, pd.DataFrame([reference])], ignore_index=True)
-            sig_df.loc[index, "Standard Context"] = reference['Standard Context']
+            sig_df.loc[index, "Standards Context"] = reference['Standards Context']
 
         ref_answer = gs_df.loc[gs_df['SIG Question'] == row["SIG Question Text"]].iloc[0]["Response"]
         answer_same[index] = row["Response"] == ref_answer
@@ -284,7 +284,7 @@ def create_assessor_report(sig_path):
     #Add the 4 new columns
     sig_df['Issue'] = pd.Series(dtype='string')
     sig_df['Gap'] = pd.Series(dtype='string')
-    sig_df['Standard Context'] = pd.Series(dtype='string')
+    sig_df['Standards Context'] = pd.Series(dtype='string')
     sig_df['Recommendation'] = pd.Series(dtype='string')
 
     #fill in the Standard context (probably will come from reference sig, TBD on that front)
@@ -305,11 +305,12 @@ def create_assessor_report(sig_path):
         elif row['Response'] not in ['n/a', 'N/A', 'N/a'] : #if the answer is not N/A, then we need to do an issue analysis
             ref = gs_df.loc[gs_df['SIG Question'] == row["SIG Question Text"]].iloc[0]
             issue_num, issue_rec = "", ""
-            if type(ref["Issue Description"]) == str and len(ref["Issue Description"]) > 0 : #there is an associated issue
-                issue_num = ref[" Ques\n #"]
-                issue_rec = ref["Recommendation "]
+            # print(ref.columns)
+            # if type(ref["Issue Description"]) == str and len(ref["Issue Description"]) > 0 : #there is an associated issue
+            #     issue_num = ref[" Ques\n #"]
+            #     issue_rec = ref["Recommendation "]
             if ai_provided[index] :
-                _, explanation = generate_recommendation(row['SIG Question Text'], row['Standard Context'], row['Additional Information'])
+                _, explanation = generate_recommendation(row['SIG Question Text'], row['Standards Context'], row['Additional Information'])
                 print("It's an issue!")
                 sig_df.loc[index, "Issue"] = 'Yes' if "contradicts" in ai_support[index] else 'No'
                 sig_df.loc[index, "Gap"] = 'Yes' if "contradicts" not in ai_support[index] else 'No'
@@ -320,7 +321,7 @@ def create_assessor_report(sig_path):
                 sig_df.loc[index, "Recommendation"] = format_rec(issue_num, issue_rec)
         else : #for the N/A responses
             if ai_provided[index] :
-                _, explanation = generate_recommendation(row['SIG Question Text'], row['Standard Context'], row['Additional Information'])
+                _, explanation = generate_recommendation(row['SIG Question Text'], row['Standards Context'], row['Additional Information'])
                 sig_df.loc[index, "Issue"] = 'No'
                 sig_df.loc[index, "Gap"] = 'Yes' if "contradicts" in ai_support[index] else 'No'
                 sig_df.loc[index, "Recommendation"] = str(explanation)
@@ -338,5 +339,7 @@ def create_assessor_report(sig_path):
 
 #-----------------RUNNER--------------------#
 
-vendor_sig = '/Users/madisonlee/Documents/GitHub/solution-ThirdPartyRisk/assets/data/synthetic_SIG.csv'
+
+vendor_sig = '../data/synthetic_SIG.csv'
+
 create_assessor_report(vendor_sig)

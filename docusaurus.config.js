@@ -147,7 +147,7 @@ async function createconfig() {
             // },
             {to: "flight-logs", label: "Flight Logs", position: "right"},
             {
-              href: "https://github.com/ibm-client-engineering/insert-solution-name",
+              href: "https://github.com/ibm-client-engineering/solution-ThirdPartyRisk",
               className: "header-github-link",
               position: "right",
             },

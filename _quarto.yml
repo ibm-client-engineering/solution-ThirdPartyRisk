@@ -6,7 +6,7 @@ language:
       search-text-placeholder: Search
 
 website:
-  title: Project Name
+  title: Third Party Risk with watsonx.ai
   favicon: images/bee.png
   page-navigation: true
   search: 
@@ -18,7 +18,7 @@ website:
     logo: images/IBMlogo.png
     right: 
       - icon: github
-        href: https://github.com/ibm-client-engineering
+        href: https://github.com/ibm-client-engineering/solution-ThirdPartyRisk
       - icon: linkedin
         menu:
           - text: Share on your LinkedIn
